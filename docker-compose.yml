@@ -3,6 +3,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
+    networks:
+      - caddy
 
   elastic:
     image: elasticsearch:7.17.13
@@ -43,6 +45,10 @@ services:
     env_file:
       - ./conf/caddy.env
       - ./conf/caddy_sensitive.env
+    environment:
+      - CADDY_INGRESS_NETWORKS=caddy
+    networks:
+      - caddy
     logging:
       driver: "json-file"
       options:
@@ -52,6 +58,8 @@ services:
   wp-fpm:
     image: wordpress:6-fpm
     restart: always
+    networks:
+      - caddy
     links:
       - db
       - redis
@@ -72,6 +80,8 @@ services:
   db:
     image: mariadb:11-jammy
     restart: always
+    networks:
+      - caddy
     volumes:
       - dbdata:/var/lib/mysql
     env_file:
@@ -92,3 +102,7 @@ volumes:
   dbdata:
   elastic:
     driver: local
+
+networks:
+  caddy:
+    external: true
