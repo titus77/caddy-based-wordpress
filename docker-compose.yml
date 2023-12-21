@@ -102,6 +102,7 @@ volumes:
   dbdata:
   elastic:
     driver: local
+  caddy_data: {}
 
 networks:
   caddy:
