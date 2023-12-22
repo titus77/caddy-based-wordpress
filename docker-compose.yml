@@ -1,42 +1,17 @@
 version: "3.9"
 services:
-  redis:
-    image: redis:7-alpine
-    restart: always
-    networks:
-      - caddy
-
-  elastic:
-    image: elasticsearch:7.17.13
-    restart: always
-    environment: 
-      discovery.type: single-node
-    ports:
-      - 9200:9200
-    volumes:
-      - elastic:/usr/share/elasticsearch/data
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1M"
-        max-file: "10"
-
   caddy:
     build:
       context: ./caddy
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - ./html:/var/www/html
       - ./.caddy_data:/data
       - ./.caddy_config:/config
-      - ./conf/basic_auth.conf:/etc/basic_auth.conf
-      - ./conf/caddyfile_optional.conf:/etc/caddyfile_optional.conf
       - ./caddy/etc/Caddyfile:/etc/caddy/Caddyfile
       - ./caddy/etc/tls_auto:/etc/tls_auto
       - ./caddy/etc/tls_custom:/etc/tls_custom
       - ./caddy/etc/tls_cloudflare:/etc/tls_cloudflare
-      - ./caddy/etc/tls_selfsigned:/etc/tls_selfsigned
       - ./mail-acme-challenge:/mail-acme-challenge
     ports:
       - "80:80"
@@ -44,66 +19,14 @@ services:
       - "443:443/udp"
     env_file:
       - ./conf/caddy.env
-      - ./conf/caddy_sensitive.env
     environment:
       - CADDY_INGRESS_NETWORKS=caddy
     networks:
       - caddy
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1M"
-        max-file: "10"
-
-  wp-fpm:
-    image: wordpress:6-fpm
-    restart: always
-    networks:
-      - caddy
-    links:
-      - db
-      - redis
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - html:/var/www/html
-      - ./conf/php_optional.ini:/usr/local/etc/php/conf.d/php_optional.ini
-    env_file:
-      - ./conf/wordpress.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1M"
-        max-file: "10"
-
-  db:
-    image: mariadb:11-jammy
-    restart: always
-    networks:
-      - caddy
-    volumes:
-      - dbdata:/var/lib/mysql
-    env_file:
-      - ./conf/db.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1M"
-        max-file: "10"
-
-volumes:
-  html:
-    driver: local
-    driver_opts:
-      type: none
-      device: $PWD/html 
-      o: bind
-  dbdata:
-  elastic:
-    driver: local
-  caddy_data: {}
 
 networks:
   caddy:
     external: true
+
+volumes:
+  caddy_data: {}
