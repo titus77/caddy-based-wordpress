@@ -13,7 +13,7 @@ services:
       - "443:443"
       - "443:443/udp"
     env_file:
-      - ./conf/caddy.env
+      - ./caddy.env
     environment:
       - CADDY_INGRESS_NETWORKS=caddy
     networks:
@@ -25,3 +25,4 @@ networks:
 
 volumes:
   caddy_data: {}
+    external: true
